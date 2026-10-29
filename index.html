@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Page text lives in js/copy.js. The title and description here are only a fallback. -->
+  <title>FIRE Calculator</title>
+  <meta name="description" content="Find your FIRE and Coast FIRE numbers, when you'll reach them, and how much to invest each month.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Shrikhand&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%23005E51'/><path d='M9 20c3-6 5 2 7-4s5 2 7-4' stroke='%23F2F9F5' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="header-text">
+        <div class="title-row">
+          <h1><span data-copy="title"></span></h1>
+          <a class="byline" id="byline" target="_blank" rel="noopener" data-copy="titleByline"></a>
+        </div>
+        <p class="lede" data-copy="lede"></p>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="export" class="btn-solid">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m0 0l-3.5-3.5M10 12l3.5-3.5M4 14v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2"/></svg>
+          <span data-copy="exportButton"></span>
+        </button>
+        <button type="button" id="copy" class="btn-ghost">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8.5 11.5a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M11.5 8.5a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1"/></svg>
+          <span id="copy-label" data-copy="shareButton"></span>
+        </button>
+        <label class="currency">
+          <span class="sr-only">Currency</span>
+          <select id="currency">
+            <option value="EUR">€ EUR</option>
+            <option value="USD">$ USD</option>
+            <option value="GBP">£ GBP</option>
+            <option value="CHF">CHF</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <!-- ============ INPUTS ============ -->
+    <form id="form" class="inputs" novalidate autocomplete="off" onsubmit="return false">
+      <section class="card" data-step-card="1">
+        <h2><span class="step">1</span> <span data-copy="stepBasicsTitle"></span></h2>
+        <div class="field">
+          <label for="name"><span data-copy="nameLabel"></span><span class="opt-inline" data-copy="nameOptional"></span><button type="button" class="info" data-tip="nameHint"></button></label>
+          <input id="name" name="name" type="text" autocomplete="given-name" maxlength="24" class="text-input">
+        </div>
+        <div class="field">
+          <div class="label-row">
+            <label for="spend"><span data-copy="spendLabel"></span><button type="button" class="info" data-tip="spendHint"></button></label>
+            <div class="seg small" role="radiogroup" aria-label="Spending period">
+              <button type="button" role="radio" data-per="m" aria-checked="true" data-copy="spendMonthly"></button>
+              <button type="button" role="radio" data-per="y" aria-checked="false" data-copy="spendYearly"></button>
+            </div>
+          </div>
+          <div class="money"><span class="sym" data-sym></span><input id="spend" name="spend" inputmode="decimal" required></div>
+          <div class="range">
+            <input type="range" id="spend-range" min="0" max="10000" step="50" aria-label="Spending slider">
+            <div class="ticks" data-ticks="spend"></div>
+          </div>
+          <p class="err" data-err="spend"></p>
+        </div>
+        <div class="field">
+          <label for="age" data-copy="ageLabel"></label>
+          <input id="age" name="age" inputmode="numeric" required class="short">
+          <p class="err" data-err="age"></p>
+        </div>
+      </section>
+
+      <section class="card" data-step-card="2">
+        <h2><span class="step">2</span> <span data-copy="stepInvestTitle"></span></h2>
+        <div class="field">
+          <label for="pv" data-copy="pvLabel"></label>
+          <div class="money"><span class="sym" data-sym></span><input id="pv" name="pv" inputmode="decimal"></div>
+          <div class="range">
+            <input type="range" id="pv-range" min="0" max="1000000" step="1000" aria-label="Invested today slider">
+            <div class="ticks" data-ticks="pv"></div>
+          </div>
+          <p class="err" data-err="pv"></p>
+        </div>
+        <div class="field">
+          <label for="c" data-copy="cLabel"></label>
+          <div class="money"><span class="sym" data-sym></span><input id="c" name="c" inputmode="decimal"></div>
+          <div class="range">
+            <input type="range" id="c-range" min="0" max="10000" step="50" aria-label="Monthly contribution slider">
+            <div class="ticks" data-ticks="c"></div>
+          </div>
+          <p class="err" data-err="c"></p>
+        </div>
+      </section>
+
+      <section class="card" data-step-card="3">
+        <h2><span class="step">3</span> <span data-copy="stepFactorsTitle"></span><span class="opt-tag" data-copy="optionalTag"></span><button type="button" class="info" data-tip="stepFactorsHint"></button></h2>
+        <div class="field">
+          <span class="label" id="wr-label"><span data-copy="wrLabel"></span><button type="button" class="info" data-tip="wrHint"></button></span>
+          <div class="chips" role="radiogroup" aria-labelledby="wr-label" id="wr-chips"></div>
+        </div>
+        <div class="field">
+          <label for="ret"><span data-copy="retLabel"></span><button type="button" class="info" data-tip="retHint"></button></label>
+          <input id="ret" name="ret" inputmode="numeric" class="short">
+          <p class="err" data-err="ret"></p>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="g"><span data-copy="growthLabel"></span><button type="button" class="info" data-tip="growthHint"></button></label>
+            <div class="stepper">
+              <button type="button" data-step="g" data-d="-0.5" aria-label="Decrease growth">−</button>
+              <div class="pct"><input id="g" name="g" inputmode="decimal"><span>%</span></div>
+              <button type="button" data-step="g" data-d="0.5" aria-label="Increase growth">+</button>
+            </div>
+            <p class="err" data-err="g"></p>
+          </div>
+          <div class="field">
+            <label for="inf"><span data-copy="inflationLabel"></span><button type="button" class="info" data-tip="inflationHint"></button></label>
+            <div class="stepper">
+              <button type="button" data-step="inf" data-d="-0.1" aria-label="Decrease inflation">−</button>
+              <div class="pct"><input id="inf" name="inf" inputmode="decimal"><span>%</span></div>
+              <button type="button" data-step="inf" data-d="0.1" aria-label="Increase inflation">+</button>
+            </div>
+            <p class="err" data-err="inf"></p>
+          </div>
+        </div>
+        <p class="real-readout" id="real-growth"></p>
+      </section>
+    </form>
+
+    <!-- ============ RESULTS ============ -->
+    <section class="results" aria-live="polite">
+      <div id="empty" class="card empty" hidden>
+        <p data-copy="emptyRequired"></p>
+      </div>
+
+      <div id="out" hidden>
+        <div class="pair hero">
+          <div class="card hero-coast">
+            <p class="eyebrow"><span data-copy="coastEyebrow"></span><button type="button" class="info" id="coast-info"></button></p>
+            <p class="big" id="coast-number">–</p>
+            <p class="sub" id="coast-sub"></p>
+            <div class="when-block" data-when>
+              <p class="tl-main" id="coast-when">–</p>
+              <p class="tl-sub" id="coast-detail"></p>
+            </div>
+          </div>
+          <div class="card hero-fire">
+            <p class="eyebrow"><span data-copy="fireEyebrow"></span><button type="button" class="info on-dark" id="fire-info"></button></p>
+            <p class="big" id="fire-number">–</p>
+            <p class="sub" id="fire-sub"></p>
+            <div class="when-block" data-when>
+              <p class="tl-main" id="fire-when">–</p>
+              <p class="tl-sub" id="fire-detail"></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="warn" class="warn" hidden></div>
+
+        <div id="projections">
+          <div class="card white goal-card">
+            <h3 data-copy="savingsTitle"></h3>
+            <p class="goal-main" id="goal-main">–</p>
+            <p class="tl-sub" id="goal-explain"></p>
+            <p class="tl-sub" id="goal-sub"></p>
+            <div class="by-wrap">
+              <label for="by" class="by-label" data-copy="savingsByAge"></label>
+              <input id="by" name="by" inputmode="numeric" class="by-input">
+            </div>
+            <p class="err" data-err="by"></p>
+          </div>
+
+          <div class="card chart-card">
+            <div class="chart-head">
+              <h3><span data-copy="chartTitle"></span><button type="button" class="info" data-tip="chartFootnote"></button></h3>
+              <ul class="legend">
+                <li><i class="k-bal"></i><span data-copy="legendPortfolio"></span></li>
+                <li><i class="k-fire"></i><span data-copy="legendFire"></span></li>
+                <li><i class="k-coast"></i><span data-copy="legendCoast"></span></li>
+                <li><i class="k-ms"></i><span data-copy="legendMilestone"></span></li>
+              </ul>
+            </div>
+            <div class="chart-wrap">
+              <svg id="chart" role="img" aria-label="Projected portfolio value over time"></svg>
+              <div id="tip" class="tip" hidden></div>
+            </div>
+          </div>
+
+          <div class="card white">
+            <h3><span data-copy="milestonesTitle"></span><button type="button" class="info" data-tip="milestonesHint"></button></h3>
+            <ol class="milestones" id="milestones"></ol>
+          </div>
+
+          <div class="card table-card">
+            <div class="chart-head">
+              <h3><span data-copy="tableTitle"></span><button type="button" class="info" data-tip="tableInfo"></button></h3>
+              <div class="seg small" role="radiogroup" aria-label="Table values">
+                <button type="button" role="radio" data-tv="real" aria-checked="true" data-copy="tableToday"></button>
+                <button type="button" role="radio" data-tv="nominal" aria-checked="false" data-copy="tableNominal"></button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table id="yearly">
+                <thead><tr>
+                  <th data-copy="colYear"></th><th data-copy="colAge"></th>
+                  <th data-copy="colStart"></th><th data-copy="colAdded"></th>
+                  <th data-copy="colGrowth"></th><th data-copy="colEnd"></th>
+                </tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="no-portfolio" class="card empty" hidden>
+          <p data-copy="emptyPortfolio"></p>
+        </div>
+      </div>
+
+      <details class="card explainer">
+        <summary data-copy="explainerTitle"></summary>
+        <p data-copy="explainerFire"></p>
+        <p data-copy="explainerCoast"></p>
+      </details>
+    </section>
+  </main>
+
+  <div id="sticky" class="sticky" hidden></div>
+  <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+
+  <div id="export-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="export-title">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="export-title" data-copy="exportModalTitle"></h3>
+        <button type="button" class="modal-close" id="export-close" aria-label="Close">×</button>
+      </div>
+      <img id="export-img" alt="">
+      <div class="modal-actions">
+        <button type="button" class="btn-solid" id="export-download"><span data-copy="exportDownload"></span></button>
+        <button type="button" class="btn-ghost" id="export-share" hidden><span data-copy="exportShare"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="wrap footer">
+    <p data-copy="footer"></p>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

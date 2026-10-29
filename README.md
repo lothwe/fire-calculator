@@ -2,7 +2,7 @@
 
 A single-page calculator for FIRE and Coast FIRE numbers: when you reach them, how much to invest monthly, and portfolio milestones. Plain HTML/CSS/JS, no build step, no backend. Nothing a visitor enters leaves their browser.
 
-Spec: `2026-10-28_fire-calculator_spec_v03.md` (Personal Finance Business project). The build has moved on since: the spec covers the maths, this code is the source of truth for the UI.
+Spec: `2026-10-28_fire-calculator_spec_v03.md`. The build has moved on since: the spec covers the maths, this code is the source of truth for the UI.
 
 ## Files
 

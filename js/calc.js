@@ -4,7 +4,8 @@
 
 export const MILESTONES = [10000, 100000, 500000, 1000000];
 export const WITHDRAWAL_RATES = [3, 3.25, 3.5, 3.75, 4];
-export const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF'];
+// To add a currency: add its code here AND an <option> in index.html.
+export const CURRENCIES = ['EUR', 'CAD', 'USD', 'GBP', 'CHF'];
 
 export const DEFAULTS = {
   currency: 'EUR',

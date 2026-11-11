@@ -83,11 +83,13 @@ function money(v, compact = false) {
     return sym + sp + Math.round(v);
   }
   fmtCache[state.currency] ??= new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: state.currency, maximumFractionDigits: 0, minimumFractionDigits: 0,
+    style: 'currency', currency: state.currency,
+    currencyDisplay: 'narrowSymbol',          // show "$", not "CA$" / "US$"
+    maximumFractionDigits: 0, minimumFractionDigits: 0,
   });
   return fmtCache[state.currency].format(Math.round(v));
 }
-const symbol = () => new Intl.NumberFormat('en-US', { style: 'currency', currency: state.currency })
+const symbol = () => new Intl.NumberFormat('en-US', { style: 'currency', currency: state.currency, currencyDisplay: 'narrowSymbol' })
   .formatToParts(0).find((p) => p.type === 'currency').value;
 const msLabel = (t0) => {
   const s = symbol(); const sp = s.length > 1 ? ' ' : '';
@@ -120,7 +122,7 @@ function initInfo() {
   const tip = $('#tooltip');
   let current = null;
   const content = (b) => b.dataset.tipHtml ?? t(b.dataset.tip);
-  const show = (b) => {
+  let show = (b) => {
     current = b;
     tip.innerHTML = content(b);
     tip.hidden = false;
@@ -138,17 +140,37 @@ function initInfo() {
     tip.classList.toggle('below', below);
   };
   const hide = () => { if (current) current.removeAttribute('aria-describedby'); current = null; tip.hidden = true; };
-  document.addEventListener('mouseover', (e) => { const b = e.target.closest('.info'); if (b) show(b); });
-  document.addEventListener('mouseout', (e) => { const b = e.target.closest('.info'); if (b && !b.contains(e.relatedTarget)) hide(); });
-  document.addEventListener('focusin', (e) => { const b = e.target.closest('.info'); if (b) show(b); });
-  document.addEventListener('focusout', (e) => { if (e.target.closest('.info')) hide(); });
+  // Mouse: hover shows. Keyboard: focus shows. Touch: a tap toggles.
+  // (On phones a tap also fires fake hover + focus events before the click;
+  // listening to those made the click immediately close what they had opened.)
+  let lastPointer = 'mouse';
+  document.addEventListener('pointerdown', (e) => { lastPointer = e.pointerType; }, true);
+  document.addEventListener('pointerover', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const b = e.target.closest('.info'); if (b) show(b);
+  });
+  document.addEventListener('pointerout', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const b = e.target.closest('.info'); if (b && !b.contains(e.relatedTarget)) hide();
+  });
+  document.addEventListener('focusin', (e) => {
+    const b = e.target.closest('.info'); if (b && b.matches(':focus-visible')) show(b);
+  });
+  document.addEventListener('focusout', (e) => { if (e.target.closest('.info') && lastPointer !== 'touch') hide(); });
   document.addEventListener('click', (e) => {
     const b = e.target.closest('.info');
-    if (b) { e.preventDefault(); e.stopPropagation(); if (current === b && !tip.hidden) hide(); else show(b); }
-    else hide();
+    if (b) {
+      e.preventDefault(); e.stopPropagation();
+      if (lastPointer === 'mouse') { show(b); return; }          // mouse click keeps it open
+      if (current === b && !tip.hidden) hide(); else show(b);    // tap toggles
+    } else if (!tip.contains(e.target)) hide();
   }, true);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
-  window.addEventListener('scroll', hide, { passive: true });
+  // Close on real scrolling only, not the few pixels a finger moves while tapping.
+  let shownAt = 0;
+  const _show = show;
+  show = (b) => { _show(b); shownAt = window.scrollY; };
+  window.addEventListener('scroll', () => { if (!tip.hidden && Math.abs(window.scrollY - shownAt) > 40) hide(); }, { passive: true });
 }
 
 // ---------- Sliders with notches ----------
